@@ -453,18 +453,9 @@ int main(int argc, char *argv[]){
         std::vector<int> clq_edges;
         for(int m = 0; m < clq.size(); m++){
             for(int k = m + 1; k < clq.size(); k++){
-                int now_node = clq[m];
-                int l = Graph.pstart[now_node];
-                int r = Graph.pstart[now_node+1] - 1;
-                while(l < r){
-                    int mid = (l + r) / 2;
-                        if(Graph.edges[mid].v < clq[k])
-                            l = mid + 1;
-                        else    
-                            r = mid;
-                }
-                if(Graph.edges[l].v == clq[k])
-                    clq_edges.push_back(Graph.edges[l].tag);
+                int edge_tag = iscon(clq[m], clq[k]);
+                if(edge_tag >= 0)
+                    clq_edges.push_back(edge_tag);
             }
         }
         UB_clqs.push_back(clq_edges);

@@ -304,7 +304,7 @@ struct EdgeListGraph {
 
 
 	// 用边进行子图初始化
-	void sub_init(std::vector<std::pair<int, int>> the_subedges){
+	void sub_init(std::vector<std::pair<int, int>> the_subedges, int vertex_count = -1){
 		std::vector<Undir_Edge_With_Tag> temp_edge;
 		int cnt = 0;
 		for(auto [a, b] : the_subedges){
@@ -315,16 +315,18 @@ struct EdgeListGraph {
 		sort(temp_edge.begin(), temp_edge.end(), cmp_with_node);
 		// std::cerr << "The num of temp_edge(in sub structure):" << temp_edge.size() << std::endl;
 		// 统计边数和顶点数
-		n = -1;
+		n = vertex_count >= 0 ? vertex_count : -1;
 		m = temp_edge.size();
-		for(int i = 0; i < temp_edge.size(); i++){
-			if(temp_edge[i].u > n)
-				n = temp_edge[i].u;
-			if(temp_edge[i].v > n)
-				n = temp_edge[i].v;
-			//std::cerr << "debug:The temp_edge(u, v) is " << "(" << temp_edge[i].u << ", " << temp_edge[i].v << ")" << " n is:" << n <<std::endl;
+		if(vertex_count < 0){
+			for(int i = 0; i < temp_edge.size(); i++){
+				if(temp_edge[i].u > n)
+					n = temp_edge[i].u;
+				if(temp_edge[i].v > n)
+					n = temp_edge[i].v;
+				//std::cerr << "debug:The temp_edge(u, v) is " << "(" << temp_edge[i].u << ", " << temp_edge[i].v << ")" << " n is:" << n <<std::endl;
+			}
+			n++;
 		}
-		n++;
 
 		// std::cerr << "The num of vertice(in sub structure):" << n << std::endl;
 		if(pstart != nullptr)
@@ -333,6 +335,9 @@ struct EdgeListGraph {
 		if(edges != nullptr)
 			delete[] edges;
 		edges = new Edge_With_Tag[m];
+		if(degree != nullptr)
+			delete[] degree;
+		degree = new int[n];
 		if(edge_to_nodes != nullptr)
 			delete[] edge_to_nodes;
 		edge_to_nodes = new std::pair<int, int>[m / 2];
@@ -344,6 +349,7 @@ struct EdgeListGraph {
 				edges[idx] = (Edge_With_Tag){temp_edge[idx].v, temp_edge[idx].tag};
 				idx++;
 			}
+			degree[i] = idx - pstart[i];
 		}
 		pstart[n] = m;
 

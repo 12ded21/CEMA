@@ -1,5 +1,32 @@
 #include "cliques.h"
 
+namespace {
+int find_edge_tag(int u, int v) {
+    if (u < 0 || v < 0 || u >= Graph.n || v >= Graph.n || u == v) {
+        return -1;
+    }
+    if (u > v) {
+        std::swap(u, v);
+    }
+
+    int l = Graph.pstart[u];
+    int r = Graph.pstart[u + 1];
+    while (l < r) {
+        int mid = l + (r - l) / 2;
+        if (Graph.edges[mid].v < v) {
+            l = mid + 1;
+        } else {
+            r = mid;
+        }
+    }
+
+    if (l < Graph.pstart[u + 1] && Graph.edges[l].v == v) {
+        return Graph.edges[l].tag;
+    }
+    return -1;
+}
+}
+
 int LB_with_fast_color(int method) {
     int n = Graph.n;
     
@@ -295,18 +322,9 @@ void Max_clqs_of_edges(std::vector<int>& ban_edges){
         std::sort(clq_node.begin(),clq_node.end(),std::less<int>());
         for(int m = 0; m < clq_node.size(); m++){
             for(int k = m + 1; k < clq_node.size(); k++){
-                int now_node = clq_node[m];
-                int l = Graph.pstart[now_node];
-                int r = Graph.pstart[now_node + 1] - 1;
-                while(l < r){
-                    int mid = (l + r) / 2;
-                        if(Graph.edges[mid].v < clq_node[k])
-                            l = mid + 1;
-                        else    
-                            r = mid;
-                }
-                if(Graph.edges[l].v == clq_node[k])
-                    clq_edge.push_back(Graph.edges[l].tag);
+                int edge_tag = find_edge_tag(clq_node[m], clq_node[k]);
+                if(edge_tag >= 0)
+                    clq_edge.push_back(edge_tag);
             }
         }
         if(ceil(sqrt(2 * (int)clq_edge.size())) > LB){
@@ -498,7 +516,16 @@ std::vector<int> neg_clq_edges(int u,int v){
         }
     }
     // std::cerr << "subedges: " << subedges.size() << "\n";
-    subgraph.sub_init(subedges);
+    if(common_neighbor.empty()){
+        delete[] dict;
+        return std::vector<int>();
+    }
+    if(subedges.empty()){
+        delete[] dict;
+        return std::vector<int>{common_neighbor[0]};
+    }
+
+    subgraph.sub_init(subedges, cnt);
 
     std::vector<int> subgraph_v;
     // if(subgraph.n <= 500){
@@ -520,7 +547,8 @@ std::vector<int> neg_clq_edges(int u,int v){
     // std::cerr << "common_neighbor: " << common_neighbor.size() << "\n";
     for(int x : subgraph_v){
         //std::cerr << x << ": " << id_to_node[x] << "\n";
-        maxclq_node.push_back(id_to_node[x]);
+        if(x >= 0 && x < (int)id_to_node.size())
+            maxclq_node.push_back(id_to_node[x]);
     }
     delete[] dict;
     return maxclq_node;
@@ -578,7 +606,7 @@ std::vector<int> final_max_clique_nodes(){
             dict[i] = -1;
     }
     // std::cerr << "debug: 'final_max_clique_nodes' - The num of edges in subgraph: " << subedges.size() << std::endl;
-    subgraph.sub_init(subedges);
+    subgraph.sub_init(subedges, cnt);
     std::vector<int> tmp;
     // 19年代码求解最大团
     // std::vector<int> tmp = subgraph.max_clq_nodes();
@@ -600,8 +628,10 @@ std::vector<int> final_max_clique_nodes(){
     }
     
     std::vector<int> fin;
-    for (int x : tmp)
-        fin.push_back(id_to_node[x]);
+    for (int x : tmp){
+        if(x >= 0 && x < (int)id_to_node.size())
+            fin.push_back(id_to_node[x]);
+    }
     // std::cerr << "debug: 'final_max_clique_nodes' - The size of fin: " << fin.size() << std::endl;
     return fin;
 }

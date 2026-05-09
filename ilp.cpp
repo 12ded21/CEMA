@@ -88,19 +88,9 @@ void ILP::LazyConstraintCallback::main(){
     std::sort(clq.begin(),clq.end(),std::less<int>());
     for(int m = 0; m < clq.size(); m++){
         for(int k = m + 1; k < clq.size(); k++){
-            int now_node = clq[m];
-            int l = Graph.pstart[now_node];
-            int r = Graph.pstart[now_node+1] - 1;
-            // bool search_flag = 0;
-            while(l < r){
-                int mid = (l + r) / 2;
-                    if(Graph.edges[mid].v < clq[k])
-                        l = mid + 1;
-                    else    
-                        r = mid;
-            }
-            if(Graph.edges[l].v == clq[k])
-                mxclq_edges.push_back(Graph.edges[l].tag);
+            int edge_tag = iscon(clq[m], clq[k]);
+            if(edge_tag >= 0)
+                mxclq_edges.push_back(edge_tag);
         }
     }
 
@@ -213,20 +203,9 @@ void ILP::add_node_clq(std::vector<int> &clq){
         IloExpr z_plus_sum_edge(env);
         for(int j = i + 1; j < clq.size(); j++){
             int v = clq[j];
-            int l = Graph.pstart[u];
-            int r = Graph.pstart[u + 1] - 1;
-            while(l < r){
-                int mid = (l + r) / 2;
-                    if(Graph.edges[mid].v < v)
-                        l = mid + 1;
-                    else    
-                        r = mid;
-            }
-
-            // 找到边之后将每条边编号所对应的变量加起来，构造约束。
-
-            if(Graph.edges[l].v == v)
-                z_plus_sum_edge += x_e[Graph.edges[l].tag];
+            int edge_tag = iscon(u, v);
+            if(edge_tag >= 0)
+                z_plus_sum_edge += x_e[edge_tag];
             else
                 std::cerr << "There is an error when get the node clq\n";  
         }
@@ -345,6 +324,11 @@ int ILP::get_ans(){
 // 判断是不是邻居, 并返回边的编号
 int iscon(int u, int w)
 {
+    if (u < 0 || w < 0 || u >= Graph.n || w >= Graph.n || u == w)
+        return -1;
+    if (u > w)
+        std::swap(u, w);
+
     int l = Graph.pstart[u], r = Graph.pstart[u + 1];
     if (l >= r)
         return -1;
