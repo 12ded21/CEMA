@@ -50,8 +50,11 @@ int LB_with_fast_color(int method) {
             
         case 3: // 3. degeneracy order 正序
             // 调用图中自带的方法生成 peel_sequence
-            if(Graph.vis == nullptr)
-			    Graph.vis = new char[Graph.n];
+            if(Graph.vis == nullptr) {
+                Graph.vis = new char[Graph.n];
+            }
+            // 强制清空一下 vis 以绝后患
+            memset(Graph.vis, 0, sizeof(char) * Graph.n);
             Graph.degen_order();
             for (int i = 0; i < n; ++i) {
                 order[i] = Graph.peel_sequence[i];
@@ -507,7 +510,7 @@ std::vector<int> neg_clq_edges(int u,int v){
     }
     // 把所有边加进去，通过边初始化子图
     for(auto x : common_neighbor){
-        //assert(dict[x] >= 0);
+        assert(dict[x] >= 0);
         int min_node = dict[x];
         for(int i = Graph.pstart[x]; i < Graph.pstart[x+1]; i++){
             if(dict[Graph.edges[i].v] != -1 && min_node < dict[Graph.edges[i].v]){
@@ -581,6 +584,7 @@ std::vector<int> final_max_clique_nodes(){
     }
     // std::cerr << "debug: 'final_max_clique_nodes' - The num of nodes: " << id_to_node.size() << std::endl;
     if (cnt == 0){
+        delete[] dict;
         return std::vector<int>();
     }
     // 初始化子图
@@ -632,6 +636,7 @@ std::vector<int> final_max_clique_nodes(){
         if(x >= 0 && x < (int)id_to_node.size())
             fin.push_back(id_to_node[x]);
     }
+    delete[] dict;
     // std::cerr << "debug: 'final_max_clique_nodes' - The size of fin: " << fin.size() << std::endl;
     return fin;
 }

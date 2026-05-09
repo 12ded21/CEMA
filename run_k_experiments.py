@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_EXECUTABLE = PROJECT_ROOT / "build" / "main"
-DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "DIMACS-10"
+DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "2nd_dimacs_clique"
 
 def resolve_project_path(path):
     path = Path(path)
@@ -41,7 +41,7 @@ def run_experiments(data_dirs, executable, k_values, m_values, e_values, time_li
     for k in k_values:
         for m_val in m_values:
             for e_val in e_values:
-                output_file = f"k-sweep-m={m_val}-k={k}-edge_method={e_val}.txt"
+                output_file = f"D2-m={m_val}-k={k}-edge_method={e_val}.txt"
                 with open(output_file, 'w') as f:
                     pass  # 清空文件内容
                 print(f"Initialized output file: {output_file}")
@@ -72,7 +72,7 @@ def run_experiments(data_dirs, executable, k_values, m_values, e_values, time_li
             for k in k_values:
                 for m_val in m_values:
                     for e_val in e_values:
-                        output_file = f"k-sweep-m={m_val}-k={k}-edge_method={e_val}.txt"
+                        output_file = f"D2-m={m_val}-k={k}-edge_method={e_val}.txt"
                         tasks.append((executable, time_limit, k, m_val, e_val, file_path, output_file, file_name))
 
     print(f"\nStarting {len(tasks)} tasks with {threads} threads...")
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # 新增接受多个 m 方法的列表，默认执行 1, 2, 3, 4, 5
     parser.add_argument('--m_methods', nargs='+', type=int, default=[2], help='List of LB selection methods (-m)')
     # 接受多个 edge_method 的列表，默认执行 5
-    parser.add_argument('--edge_methods', nargs='+', type=int, default=[5], help='List of edge selection methods (-e)')
+    parser.add_argument('--edge_methods', nargs='+', type=int, default=[1,2,3,4], help='List of edge selection methods (-e)')
     
     args = parser.parse_args()
     

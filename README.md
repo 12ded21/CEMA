@@ -17,6 +17,7 @@ The implementation combines graph reductions, clique-based preprocessing, upper/
 |-- run_k_experiments.py  # batch experiments with fixed edge budgets k
 |-- run_d_experiments.py  # batch experiments with budget density d
 |-- data/                 # benchmark graph instances
+|-- results/              # the results of our experiments
 `-- CMakeLists.txt        # CMake build configuration
 ```
 

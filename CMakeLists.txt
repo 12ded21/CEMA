@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.12)  # 需支持C++17
 project(CEMA LANGUAGES CXX)
 
-
-
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -45,8 +43,7 @@ target_include_directories(main PRIVATE ${CPLEX_INCLUDE_DIRS})
 # 链接库目录
 target_link_directories(main PRIVATE ${CPLEX_LIB_DIRS})
 
-
-# 添加编译选项
+# 添加编译选项 (编译器插桩)
 target_compile_options(main PRIVATE
     -O3
     -m64
@@ -57,8 +54,8 @@ target_compile_options(main PRIVATE
     #-Wall
     # -g
     -DMOMC
-    #-fsanitize=address,undefined 
-    #-fno-omit-frame-pointer
+    # -fsanitize=address,undefined 
+    # -fno-omit-frame-pointer
     #-mcmodel=medium
     )  # 禁用警告（与-w等效）
 
@@ -67,10 +64,12 @@ target_compile_definitions(main PRIVATE
     NDEBUG
     IL_STD)
 
-# 链接库
+# 链接库 (修复点：在这里加上链接器需要的 sanitizer 标志)
 target_link_libraries(main PRIVATE
     concert
     ilocplex
     cplex
     pthread
-    m)
+    m
+    # -fsanitize=address,undefined   # <--- 【新增这一行】告诉链接器链接 ASan/UBSan 库
+)

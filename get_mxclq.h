@@ -22,7 +22,7 @@
 #define P_FALSE 0
 #define NO_REASON -3
 #define CONFLICT -1978
-#define tab_node_size  510
+#define tab_node_size  2010
 #define max_expand_depth 1200
 #define pop(stack) stack[--stack ## _fill_pointer]
 #define push(item, stack) stack[stack ## _fill_pointer++] = item

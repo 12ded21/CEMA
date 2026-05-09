@@ -317,7 +317,7 @@ int main(int argc, char *argv[]){
 #ifdef COLOR
     auto color_ban_start = std::chrono::high_resolution_clock::now();
     all_edges = color_vector();
-    for(int i = 0; i < Graph.m / 2; i++){
+    for(int i = 0; i < all_edges.size(); i++){
         if(all_edges[i].first <= LB){
             Graph.ban_edge[all_edges[i].second] = 1;
             color_ban++;
