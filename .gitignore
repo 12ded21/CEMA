@@ -1,0 +1,25 @@
+build/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Experiment outputs and runtime logs
+k-sweep-*.txt
+d-sweep-*.txt
+D2-*.txt
+D10-*.txt
+*.log
+nohup.out
+perf.data*
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Local editor/runtime files
+.agents/
+.codex/
+.vscode/
