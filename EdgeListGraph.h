@@ -12,7 +12,6 @@
 #include "MBitSet.h"
 #include "utils.h"
 #include "LinearHeap.h"
-//using namespace std;
 
 
 // cishu是全局变量
@@ -112,7 +111,6 @@ struct EdgeListGraph {
 	int* degree = nullptr;
 	// 存储根据结点度数的排序
 	int* degree_rank = nullptr;
-	// int* edges;
 	// 这个 Edge_With_Tag 里面存储到达结点和边的编号
 	Edge_With_Tag * edges = nullptr;
 	// 存储虚禁用数组；
@@ -121,7 +119,6 @@ struct EdgeListGraph {
 	int* ban_node = nullptr;
 	// 从边的编号到两个顶点的映射
 	std::pair<int, int>* edge_to_nodes;
-	//
 	int max_core;
 	//oriented graph
 	ept *pstart_o = nullptr;
@@ -168,11 +165,9 @@ struct EdgeListGraph {
 	int* col = nullptr;
 	// degen_order
 	int* peel_sequence = nullptr;
-	//
 	int* core = nullptr;
 	// 图的密度
 	double R;
-	//
 	int* out_mapping;
 	// 记录删除掉的边
 	std::vector<int> global_delete_edges;
@@ -313,7 +308,6 @@ struct EdgeListGraph {
 			cnt++;
 		}
 		sort(temp_edge.begin(), temp_edge.end(), cmp_with_node);
-		// std::cerr << "The num of temp_edge(in sub structure):" << temp_edge.size() << std::endl;
 		// 统计边数和顶点数
 		n = vertex_count >= 0 ? vertex_count : -1;
 		m = temp_edge.size();
@@ -323,12 +317,10 @@ struct EdgeListGraph {
 					n = temp_edge[i].u;
 				if(temp_edge[i].v > n)
 					n = temp_edge[i].v;
-				//std::cerr << "debug:The temp_edge(u, v) is " << "(" << temp_edge[i].u << ", " << temp_edge[i].v << ")" << " n is:" << n <<std::endl;
 			}
 			n++;
 		}
 
-		// std::cerr << "The num of vertice(in sub structure):" << n << std::endl;
 		if(pstart != nullptr)
 			delete[] pstart;
 		pstart = new ept[n+1];
@@ -383,13 +375,10 @@ struct EdgeListGraph {
 			next[i] = head[degree[i]];
 			head[degree[i]] = i;
 		}
-		// std::cerr << "n is:" << n << std::endl;
-		// std::cerr << "max_degree is:" << max_degree << std::endl;
 		for(int processed_vertices = 0;max_degree >= max_clique.size()&&processed_vertices < processed_threshold;processed_vertices ++) {
 			int u = n;
 			while(max_degree >= max_clique.size()&&u == n) {
 				for(int v = head[max_degree];v != n;) {
-					// std::cerr << "v is:" << v << std::endl;
 					int tmp = next[v];
 					if(degree[v] == max_degree) {
 						u = v;
@@ -420,9 +409,6 @@ struct EdgeListGraph {
 			for(int j = 0;j < vs.size();j ++) {
 				int v = vs[j], d = 0;
 				for(int k = pstart[v];k < pstart[v+1];k ++) {
-					// std::cerr << "pstart:" << pstart[v] << " " << pstart[v+1] << std::endl;
-					// std::cerr << "m is:" << m << std::endl;
-					// std::cerr << "debug:edges[k].v" << ":" << edges[k].v << " k:" << k << std::endl;
 					if(vis[edges[k].v] == 2) ++ d;
 				}
 				vs_deg[j] = d;
@@ -469,7 +455,6 @@ struct EdgeListGraph {
 		delete[] next;
 		delete[] degree;
 	#ifndef NDEBUG
-		//printf("*** Heuristic clique size: %lu, time: %s (microseconds)\n", max_clique.size(), integer_to_string(t.elapsed()).c_str());
 		printf("There is a debug!\n");
 	#endif
 	}
@@ -931,7 +916,6 @@ struct EdgeListGraph {
 					assert(new_size == vs_size);
 				}
 				if(key + 1 + current_clique_size > max_clique.size()) {
-					//printf("Find clique of size %u after search %u egos\n", degree[v] + 2, n-i);
 					max_clique.clear();
 					max_clique.reserve(key + 1 + current_clique_size);
 					for(int k = j;k < vs_size;k ++) max_clique.pb(vs[k]);
@@ -982,8 +966,6 @@ struct EdgeListGraph {
 		assert(max_clique.size() >= 2&&max_clique.size() <= n);
 	#endif
 
-		//Timer t;
-
 		int max_local_UB = 0, initial_size = max_clique.size();
 		int *queue = new int[max_core];
 		ListLinearHeap *heap = new ListLinearHeap(n, max_core);
@@ -1027,17 +1009,14 @@ struct EdgeListGraph {
 				degree_one_two_reduction_with_folding_matrix(current_clique_size, vs_buf.data(), vs_size, rdegree, contractions);
 				if(max_clique.size() >= UB) break;
 
-				//if(vs_size + current_clique_size <= max_clique.size()) continue;
 				if(vs_size < old_size&&current_clique_size + color_bound(vs_buf.data(), vs_size, mapping, color_, vis) <= max_clique.size()) continue;
 
 				//degeneracy-based maximal clique
-				//sort(vs_buf.begin(), vs_buf.begin()+vs_size);
 				for(int j = 0;j < vs_size;j ++) degree[vs_buf[j]] = vs_size - 1 - rdegree[vs_buf[j]];
 				int start_color = degeneracy_maximal_clique_matrix(current_clique_size, vs_buf.data(), vs_size, degree, 1, 0);
 				if(max_clique.size() >= UB) break;
 
 				//color-based upper bound
-				//printf("start_color: %u, vs_size: %u\n", start_color, vs_size);
 				local_UBs[i-1] = current_clique_size + coloring_matrix(vs_buf.data(), vs_size, rid, vis, 0, start_color);
 			}
 			else {
@@ -1061,7 +1040,6 @@ struct EdgeListGraph {
 		int new_UB = max_clique.size();
 		if(max_local_UB > new_UB) new_UB = max_local_UB;
 	#ifndef NDEBUG
-		//printf("*** ego_degen clique size: %lu, UB: %u, Time: %s (microseconds)\n", max_clique.size(), new_UB, integer_to_string(t.elapsed()).c_str());
 		printf("There is a debug!\n");
 	#endif
 		return new_UB;
@@ -1072,8 +1050,6 @@ struct EdgeListGraph {
 	int degeneracy_maximal_clique_adjacency_list(int *peel_sequence, int *core, int *color, char opt, char greedy_extend = 0) {
 		if(opt) heuristic_max_clique_max_degree(10);
 		int threshold = max_clique.size();
-
-		//Timer t;
 
 		int *id_s = peel_sequence;
 		int *degree = new int[n];
@@ -1134,7 +1110,6 @@ struct EdgeListGraph {
 			}
 			delete heap;
 	#ifndef NDEBUG
-			//printf("*** Degeneracy clique size: %lu, max_core: %u, Time: %s (microseconds)\n", res.size(), max_core, integer_to_string(t.elapsed()).c_str());
 			printf("There is a debug!\n");
 	#endif
 			if(res.size() > max_clique.size()) max_clique = res;
@@ -1159,7 +1134,6 @@ struct EdgeListGraph {
 						}
 					}
 	#ifndef NDEBUG
-					//printf("*** Degen_greedy_extend clique size: %lu, num_colors: %u, Time: %s (microseconds)\n", res.size(), num_color, integer_to_string(t.elapsed()).c_str());
 					printf("There is a debug!\n");
 	#endif
 				}
@@ -1177,7 +1151,6 @@ struct EdgeListGraph {
 	void put_into_one_vector(int &current_clique_size, int &i, int *vs, int &vs_size, bool check, const int rd, int *rid) {
 		if(vs_size - rd + current_clique_size <= max_clique.size()) {
 			del.pb(vs[i]);
-			//printf("insert %u\n", vs[i]);
 		}
 		else if(check&&rd <= 3) {
 			switch(rd) {
@@ -1199,7 +1172,6 @@ struct EdgeListGraph {
 			if(rd <= 3&&vs_size - rd + current_clique_size > max_clique.size()) {
 				switch(rd) {
 				case 0: current_clique[current_clique_size ++] = vs[i];
-						//printf("added %u to maximum clique\n", vs[i]);
 						vs[i] = vs[-- vs_size]; rid[vs[i]] = i;
 						-- i;
 						break;
@@ -1214,7 +1186,6 @@ struct EdgeListGraph {
 		else {
 			if(vs_size - rd + current_clique_size == max_clique.size()) {
 				del.pb(vs[i]);
-				//printf("insert %u\n", vs[i]);
 			}
 		}
 	}
@@ -1231,7 +1202,6 @@ struct EdgeListGraph {
 			while(!del.empty()) {
 				int u = del.back(); del.pop_back();
 				rdegree[u] = 0;
-				//printf("u: %u, rid[u]: %u, vs[rid[u]]: %u, vs_size: %u\n", u, rid[u], vs[rid[u]], vs_size);
 				assert(rid[u] < vs_size&&vs[rid[u]] == u);
 				int idx = rid[u];
 				vs[idx] = vs[-- vs_size]; rid[vs[idx]] = idx;
@@ -1353,7 +1323,6 @@ struct EdgeListGraph {
 				unsigned char *t_matrix = matrix + u*matrix_len;
 				assert(rid[u] < vs_size&&vs[rid[u]] == u);
 				int idx = rid[u];
-				//std::swap(vs[idx], vs[vs_size-1]); rid[vs[idx]] = idx; rid[vs[vs_size-1]] = vs_size - 1;
 				rdegree[u] = 0;
 				vs[idx] = vs[-- vs_size]; rid[vs[idx]] = idx;
 
@@ -1377,8 +1346,6 @@ struct EdgeListGraph {
 				if(test_bit(t_matrix2, vs[idx3])) connected_3 = 1;
 				char total_connected = connected_1 + connected_2 + connected_3;
 				if(total_connected == 0) { //isolation reduction
-					//rdegree[u] = 0; -- vs_size;
-
 					current_clique[current_clique_size ++] = u;
 					rdegree[vs[idx3]] = 0;
 					vs[idx3] = vs[-- vs_size]; rid[vs[idx3]] = idx3;
@@ -1398,8 +1365,6 @@ struct EdgeListGraph {
 					}
 				}
 				else if(total_connected == 1) {
-					//rdegree[u] = 0; -- vs_size;
-
 					current_clique[current_clique_size ++] = n;
 					//the following ensures that vs[idx2] is the vertex to be deleted
 					if(connected_3) {
@@ -1447,8 +1412,6 @@ struct EdgeListGraph {
 					put_into_one_vector(current_clique_size, rid[v], vs, vs_size, rdegree[v] != old_degree_v, rdegree[v], rid);
 				}
 				else if(total_connected == 2) {
-					//rdegree[u] = 0; -- vs_size;
-
 					current_clique[current_clique_size ++] = n;
 					//the following ensures that vs[idx2] is the vertex to be deleted
 					if(!connected_3) {
@@ -1499,8 +1462,6 @@ struct EdgeListGraph {
 				}
 				else {
 					assert(total_connected == 3);
-					//rdegree[u] = 0; -- vs_size;
-
 					current_clique[current_clique_size ++] = n;
 
 					int v1 = vs[idx1], old_degree_v1 = rdegree[v1];
@@ -1948,16 +1909,12 @@ struct EdgeListGraph {
 				if(!vs_size||max_clique.size() > old_max_clique_size) return ;
 			}
 
-			//int cc_cnt = compute_connected_components(vs, vs_size);
-			//if(cc_cnt > 1) ++ cc_larger_than_one[level];
-
 			//degeneracy-based maximal clique
 			int start_color = degeneracy_maximal_clique_matrix(clique_size, vs, vs_size, degree, 1, 1);
 
 			if(max_clique.size() > old_max_clique_size) return ;
 
 			int threshold = max_clique.size() - clique_size;
-			//printf("start_color: %u, vs_size: %u\n", start_color, vs_size);
 			int color_cnt = coloring_matrix_advanced(vs, vs_size, color, start_color, threshold);
 			if(color_cnt <= threshold) return ;
 
@@ -2103,7 +2060,6 @@ struct EdgeListGraph {
 
 	#ifdef _KERNEL_
 			old_size = vs_size;
-			//degree_one_two_reduction_with_folding_matrix(current_clique_size, vs_buf.data(), vs_size, rdegree, contractions);
 			degree_one_two_three_reduction_with_folding_matrix(current_clique_size, vs_buf.data(), vs_size, rdegree, rid);
 			if(current_clique_size > max_clique.size()) store_a_larger_clique(current_clique_size, "outside kernelization", 1);
 			total_kernel_effect += old_size - vs_size;
@@ -2120,7 +2076,6 @@ struct EdgeListGraph {
 
 			changes.clear();
 			recursive_search_clique_color_with_kernelization(0, current_clique_size, 0, vs_size, 1);
-			//recursive_search_clique_color_without_kernelization(current_clique_size, 0, vs_size);
 	#else
 			recursive_search_clique_color_without_kernelization(0, current_clique_size, 0, vs_size);
 	#endif
@@ -2129,10 +2084,7 @@ struct EdgeListGraph {
 		delete[] queue;
 
 	#ifdef _STATISTIC_
-		if(matrix_cnt == 0) {
-			// printf("No matrix is constructed!\n");
-		}
-		else {
+		if(matrix_cnt != 0) {
 	#ifndef NDEBUG
 			printf("Number of matrix constructed: %s\n", integer_to_string(matrix_cnt).c_str());
 			printf("Average density: %.4lf, min density: %.4lf, average kernel_effect: %.4lf\n", total_density/matrix_cnt, min_density, double(total_kernel_effect)/matrix_cnt);
@@ -2152,14 +2104,12 @@ struct EdgeListGraph {
 		int *peel_sequence = new int[n];
 		int *core = new int[n];
 		int *color = new int[n];
-		// std::vector<int> max_clique;
 
 		max_clique.clear();
 		char opt = 1;
 		if(!initial_by_MC_EGO) opt = 0;
 		int UB = degeneracy_maximal_clique_adjacency_list(peel_sequence, core, color, opt);
 		assert(max_clique.size() >= 2);
-		//printf("max_core: %u, UB: %u\n", max_core, UB);
 		if(max_clique.size() < UB&&(exact||initial_by_MC_EGO)) {
 			int old_size = max_clique.size();
 
@@ -2191,7 +2141,6 @@ struct EdgeListGraph {
 			if(initial_by_MC_EGO) {
 				UB = ego_degen(peel_sequence, core, color, local_UBs, UB);
 	#ifndef NDEBUG
-				//printf("\tMC-EGO Time: %s\n", integer_to_string(t.elapsed()).c_str());
 				printf("There is a debug!\n");
 	#endif
 			}
@@ -2216,11 +2165,9 @@ struct EdgeListGraph {
 		delete[] core;
 		delete[] peel_sequence;
 	#ifndef NDEBUG
-		if(exact||UB <= max_clique.size()) 
-			//printf("\tMaximum Clique Size: %lu, Max Depth: %u, Total Time: %s\n", max_clique.size(), max_depth, integer_to_string(t.elapsed()).c_str());
+		if(exact||UB <= max_clique.size())
 			printf("There is an if print!\n");
-		else 
-			//printf("\tHeuristic Clique Size: %lu, UB: %u, Total Time: %s\n", max_clique.size(), UB, integer_to_string(t.elapsed()).c_str());
+		else
 			printf("There is an else print!\n");
 	#endif
 	}
@@ -2408,7 +2355,6 @@ struct EdgeListGraph {
 		rid = new int[n];
 		for (int i = 0; i < n; i++){
 			//如果是不规约掉，那么就记录下来
-			// std::cerr << "degree[" << i << "] = " << degree[i] << "\n";
 			if (degree[i] > LB - 1){
 				rid[i] = cnt;
 				out_mapping[cnt] = out_mapping[i];
@@ -2463,7 +2409,6 @@ struct EdgeListGraph {
 					edge_to_nodes[edges[j].tag].second = std::max(i, edges[j].v);
 				}
 			}
-			// std::cerr << "num of edge tag: " << cnt << std::endl;
 		}
 		// 重新计算密度
 		if(m != 0)
@@ -2506,7 +2451,6 @@ struct EdgeListGraph {
 		for(int i = 0; i < tag_record.size(); i += 2){
 			tag_map[tag_record[i]] = i / 2;
 		}
-		// int max_trans = 0;
 		for(int i = 0; i < pos; i++){
 			edges[i].tag = tag_map[edges[i].tag];
 		}
@@ -2517,7 +2461,6 @@ struct EdgeListGraph {
 		int cnt = 0;
 
 		for(int i = 0; i < n; i++){
-			// std::cerr << pstart[i] << " " << pstart[i + 1] << std::endl;
 			for(int j = pstart[i]; j < pstart[i + 1]; j++){
 				edge_to_nodes[edges[j].tag].first = std::min(i, edges[j].v);
 				edge_to_nodes[edges[j].tag].second = std::max(i, edges[j].v);
@@ -2549,8 +2492,7 @@ struct EdgeListGraph {
 		std::ifstream infile;
 		char buf[1024];
 		char tmps1[1024], tmps2[1024];
-		//std::vector<std::pair<int, int> > epairs;
-		std::vector<Undir_Edge_With_Tag> etuples; 
+		std::vector<Undir_Edge_With_Tag> etuples;
 		std::vector<int> nodes;
 		infile.open(filepath, std::ios::in);
 		if (!infile.is_open()) {
@@ -2570,7 +2512,6 @@ struct EdgeListGraph {
 				continue;
 			}
 			sscanf(buf, "%s %d %d", tmps1, &from, &to);
-			//std::cerr << from << " " << to << std::endl;
 			if (from != to) {
 				etuples.push_back((Undir_Edge_With_Tag){from, to, lno - 1});
 				etuples.push_back((Undir_Edge_With_Tag){to, from, lno - 1});
@@ -2657,174 +2598,4 @@ struct EdgeListGraph {
 		else
 			R = 0;
 	}
-	// 暂时只处理 dimacs-2 的图
-	/*
-	void read_binary_graph(const char* filepath) {
-		FILE* f = open_file(filepath, "rb");
-		if (f == NULL)
-			perror("Error opening file");
-		int tt;
-		fread_wall(&tt, sizeof(int), 1, f);
-		fread_wall(&n, sizeof(int), 1, f);
-		fread_wall(&m, sizeof(int), 1, f);
-
-		printf("n = %s; m = %s (undirected)\n", integer_to_string(n).c_str(), integer_to_string(m / 2).c_str());
-
-		int* degree = new int[n];
-		fread_wall(degree, sizeof(unsigned int), n, f);
-		if (pstart == nullptr) pstart = new ept[n + 1];
-		if (edges == nullptr) edges = new int[m];
-
-		pstart[0] = 0;
-		for (int i = 0; i < n; i++) {
-			if (degree[i] > 0) {
-				fread_wall(edges + pstart[i], sizeof(int), degree[i], f);
-
-				// remove self loops and parallel edges
-				int* buff = edges + pstart[i];
-				std::sort(buff, buff + degree[i]);
-				int idx = 0;
-				for (int j = 0; j < degree[i]; j++) {
-					if (buff[j] >= n) printf("vertex id %u wrong\n", buff[j]);
-					if (buff[j] == i || (j > 0 && buff[j] == buff[j - 1])) continue;
-					buff[idx++] = buff[j];
-				}
-				degree[i] = idx;
-			}
-
-			pstart[i + 1] = pstart[i] + degree[i];
-		}
-
-		fclose(f);
-		delete[] degree;
-	}
-
-	int readRawDIM10Text(const char* filepath) {
-		std::ifstream infile;
-		const int SZBUF = 99999999;
-		char* buf = new char[SZBUF];
-		std::vector<std::pair<int, int> > epairs;
-		std::vector<int> nodes;
-		//FILE *f = Utility::open_file(filepath, "r");
-		infile.open(filepath, std::ios::in);
-		if (!infile.is_open()) {
-			fprintf(stderr, "can not find file %s\n", filepath);
-			exit(1);
-		}
-
-		infile.getline(buf, SZBUF);
-		while (buf[0] == '%') infile.getline(buf, SZBUF);
-
-		std::stringstream ss(buf);
-		int fmt = 0;
-		ss >> n >> m >> fmt;
-		if (fmt != 0) {
-			printf("Format of %s is not supported yet\n", filepath);
-			exit(0);
-		}
-		m *= 2;
-		pstart = new ept[n + 1];
-		edges = new int[m];
-		int j = 0;
-		for (int u = 0; u < n; u++) {
-			pstart[u] = j;
-			infile.getline(buf, SZBUF);
-			std::stringstream ss(buf);
-			int nei;
-			while (ss >> nei) {
-				//printf("%d ", nei);
-				if ((nei - 1) != u) {
-					edges[j] = nei - 1;
-					j++;
-					//if (j==745)
-					//	printf("pause\n");
-				}
-			}
-			//printf("\n");
-			std::sort(edges + pstart[u], edges + j);
-		}
-		pstart[n] = j;
-		assert(j == m);
-		printf("n:%u m:%lu\n", n, m / 2);
-		return 0;
-	}
-
-	void readRawSNAPText(const char* filepath) {
-		std::ifstream infile;
-		char buf[1024];
-		std::vector<std::pair<int, int> > epairs;
-		std::vector<int> nodes;
-		//FILE *f = Utility::open_file(filepath, "r");
-		infile.open(filepath, std::ios::in);
-		if (!infile.is_open()) {
-			fprintf(stderr, "can not find file %s\n", filepath);
-			exit(1);
-		}
-		int max_id = 0;
-		int from, to;
-		while (infile.getline(buf, 1024)) {
-			char* p = buf;
-			while (*p == ' ' && *p != '\0') p++;
-			if (*p == '#' || *p == '\0') continue;
-			std::stringstream ss(buf);
-			ss >> from >> to;
-			if (from != to) {
-				epairs.push_back(std::make_pair(from, to));
-				epairs.push_back(std::make_pair(to, from));
-				nodes.push_back(from);
-				nodes.push_back(to);
-			}
-		}
-		infile.close();
-
-		sort(nodes.begin(), nodes.end());
-		nodes.erase(unique(nodes.begin(), nodes.end()), nodes.end());
-
-		sort(epairs.begin(), epairs.end());
-		epairs.erase(unique(epairs.begin(), epairs.end()), epairs.end());
-
-		int contn = 1;
-		std::map<int, int> idmp;
-		for (int i = 0; i < nodes.size(); i++) {
-			idmp[nodes[i]] = i;
-			if (nodes[i] != i) {
-				contn = 0;
-			}
-		}
-		if (contn == 0) printf("Node ids are not preserved! \n");
-
-		n = nodes.size();
-		m = epairs.size();
-		printf("n = %s, (undirected) m = %s\n",
-			integer_to_string(n).c_str(),
-			integer_to_string(m / 2).c_str());
-
-		pstart = new ept[n + 1];
-		edges = new int[m];
-		int j = 0;
-		for (int i = 0; i < n; i++) {
-			pstart[i] = j;
-			while (j < m && epairs[j].first == nodes[i]) {
-				edges[j] = idmp[epairs[j].second];
-				++j;
-			}
-		}
-		pstart[n] = j;
-	}
-
-	int writeBinaryGraph_ToBin(const char* filepath) {
-		FILE* f = open_file(filepath, "wb");
-		int tt = sizeof(int);
-		fwrite(&tt, sizeof(int), 1, f); //length of int
-		fwrite(&n, sizeof(int), 1, f);
-		fwrite(&m, sizeof(int), 1, f);
-		int* degree = new int[n];
-		for (int i = 0; i < n; i++)
-			degree[i] = pstart[i + 1] - pstart[i];
-		fwrite(degree, sizeof(int), n, f);
-		fwrite(edges, sizeof(int), m, f);
-		fclose(f);
-		return 0;
-	}
-	*/
 };

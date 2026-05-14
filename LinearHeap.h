@@ -55,14 +55,12 @@ public:
 		if(next_s == nullptr) next_s = new int[n];
 		if(head_s == nullptr) head_s = new int[key_cap+1];
 		
-		//assert(_key_cap <= key_cap);
 		min_key = max_key = _key_cap;
 		for(int i = 0;i <= _key_cap;i ++) head_s[i] = n;
 
 		for(int i = 0;i < _n;i ++) {
 			int id = _id_s[i];
 			int key = _key_s[id];
-			//assert(id < n); assert(key <= _key_cap);
 
 			key_s[id] = key; pre_s[id] = n; next_s[id] = head_s[key];
 			if(head_s[key] != n) pre_s[head_s[key]] = id;
@@ -89,8 +87,6 @@ public:
 		id = head_s[min_key];
 		key = min_key;
 
-		//assert(key_s[id] == key);
-
 		return true;
 	}
 
@@ -102,7 +98,6 @@ public:
 		key = min_key;
 
 		key_s[id] = key_cap+1;
-		//assert(key_s[id] == key);
 
 		head_s[min_key] = next_s[id];
 		if(head_s[min_key] != n) pre_s[head_s[min_key]] = n;
@@ -110,11 +105,9 @@ public:
 	}
 
 	int decrement(int id, int dec) {
-		//assert(key_s[id] >= dec);
 		if(key_s[id] > key_cap) return 0;
 
 		if(pre_s[id] == n) {
-			//assert(head_s[key_s[id]] == id);
 			head_s[key_s[id]] = next_s[id];
 			if(next_s[id] != n) pre_s[next_s[id]] = n;
 		}

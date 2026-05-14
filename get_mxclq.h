@@ -22,7 +22,7 @@
 #define P_FALSE 0
 #define NO_REASON -3
 #define CONFLICT -1978
-#define tab_node_size  2010
+#define tab_node_size  510
 #define max_expand_depth 1200
 #define pop(stack) stack[--stack ## _fill_pointer]
 #define push(item, stack) stack[stack ## _fill_pointer++] = item
@@ -55,16 +55,12 @@ static int none_degree[tab_node_size];
 int FORMAT = 1, DENSITY, NB_NODE, ADDED_NODE, NB_EDGE, MAX_CLQ_SIZE,
 		MAX_ISET_SIZE, NB_BACK_CLIQUE;
 char node_state[2 * tab_node_size];
-//int node_value[2 * tab_node_size];
 int node_reason[2 * tab_node_size];
-//char static_matrix[tab_node_size][tab_node_size];
 char *static_matrix;
 char matrice[tab_node_size][tab_node_size];
 int iSET[tab_node_size][tab_node_size];
 int iSET_COUNT = 0;
 int iSET_Size[tab_node_size];
-//int iSET_OLD_Size[tab_node_size];
-//int iSET_ADD_Size[tab_node_size];
 char iSET_State[tab_node_size];
 char iSET_Used[tab_node_size];
 char iSET_Tested[tab_node_size];
@@ -82,7 +78,6 @@ int NEW_UNIT_STACK_fill_pointer = 0;
 int *node_neibors[tab_node_size];
 int *none_neibors[tab_node_size];
 int active_degree[tab_node_size];
-//int neibor_degree[tab_node_size];
 int Clique_Stack[tab_node_size];
 int Clique_Stack_fill_pointer = 0;
 int *INIT_Stack;
@@ -102,8 +97,6 @@ int OLD_NEW[tab_node_size];
 int NB_CANDIDATE = 0, FIRST_INDEX, REBUILD_MATRIX = FALSE;
 
 int Extra_Node_Stack[1000];
-//int Extra_Node_Stack_fill_pointer = 0;
-//int Extra_Node_Index[tab_node_size];
 int Last_Idx = 0;
 int cut_ver = 0, total_cut_ver = 0;
 int cut_inc = 0, total_cut_inc = 0;
@@ -187,6 +180,7 @@ void rebuild_matrix(int start);
 
 void identify_conflict_sets(int iset_idx);
 void enlarge_conflict_sets();
+void push_reason_iset(int iset_idx);
 int unit_iset_process();
 int unit_iset_process_used_first();
 

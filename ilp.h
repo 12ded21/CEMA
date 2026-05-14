@@ -25,8 +25,6 @@ public:
     int m;
     int y;
     int z_cnt = 0;
-    // // 记录所有加过的约束,记录所有团
-    // std::vector<std::vector<int>> all_constraints;
     // 懒惰约束回调函数
     class LazyConstraintCallback: public IloCplex::LazyConstraintCallbackI{
     private:

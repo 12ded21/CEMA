@@ -4,7 +4,7 @@ int GET::none_degree[tab_node_size];
 int GET::static_degree[tab_node_size];
 
 GET::GET(){
-	FORMAT = 1;         // 保留默认值
+	FORMAT = 1;
     DENSITY = 0;
     NB_NODE = 0;
     ADDED_NODE = 0;
@@ -36,7 +36,7 @@ GET::GET(){
     STATIC_ORDERING = TRUE;
     LAST_IN = 0;
     INIT_CLIQUE = 0;
-    Dynamic_Radio = 0.6f;  // 保留默认值
+    Dynamic_Radio = 0.6f;
     Mean_Dynamic_Radio = 0.0f;
     Dynamic_Count = 0;
     LIST_ALL = FALSE;
@@ -46,7 +46,6 @@ GET::GET(){
     REASON_STACK_fill_pointer = 0;
     BRANCHING_COUNT = 0; LAST_BRANCHING_COUNT = 0;
 
-    // 数组清零
     memset(node_state, 0, sizeof(node_state));
     memset(node_reason, 0, sizeof(node_reason));
     memset(matrice, 0, sizeof(matrice));
@@ -72,7 +71,6 @@ GET::GET(){
 	memset(none_degree, 0, sizeof(none_degree));
 	memset(static_degree, 0, sizeof(static_degree));
 
-    // 指针数组初始化为nullptr
     static_matrix = nullptr;
     INIT_Stack = nullptr;
     APPEND_STACK = nullptr;
@@ -86,7 +84,6 @@ GET::GET(){
         none_neibors[i] = nullptr;
     }
 
-    // 栈指针置0
     memset(Branches_Nodes, 0, sizeof(Branches_Nodes));
     memset(REDUCED_iSET_STACK, 0, sizeof(REDUCED_iSET_STACK));
     memset(PASSIVE_iSET_STACK, 0, sizeof(PASSIVE_iSET_STACK));
@@ -106,8 +103,6 @@ GET::~GET(){
         free(flag);
         flag = nullptr;
     }
-
-    // 释放其他动态数组
     if (static_matrix != nullptr) {
         free(static_matrix);
         static_matrix = nullptr;
@@ -207,7 +202,6 @@ int GET::build_simple_graph_instance(EdgeListGraph& graph) {
 			}
 		}
 
-		//std::cerr << i << ": " << "none_deg: " << none_degree[i] <<", nb1: " << nb1 << ", nb2: " << nb2 << std::endl;
 		node_neibors[i][nb1] = NONE;
 		none_neibors[i][nb2] = NONE;
 	}
@@ -223,10 +217,6 @@ int GET::build_simple_graph_instance(EdgeListGraph& graph) {
 				static_degree_dec);
 	}
 	
-	// printf("c Instance Information: #node=%d, #edge=%d density= %5.4f \n",
-	// 		NB_NODE, NB_EDGE,
-	// 	   density(NB_NODE,NB_EDGE));
-
 	return TRUE;
 }
 
@@ -262,7 +252,6 @@ void GET::search_initial_maximum_clique() {
 		ptr(Candidate_Stack) = j;
 		node = choose_candidate_node();
 	}
-	// printf("c Initial clique size: %d\n", ptr(INIT_Stack));
 }
 
 void GET::complement_graph() {
@@ -291,7 +280,6 @@ void GET::sort_by_active_degree() {
 	ptr(Candidate_Stack) = 0;
 	for (i = 1; i <= NB_NODE; i++) {
 		node_state[i] = ACTIVE;
-		//	active_degree[i] = static_degree[i];
 	}
 	for (i = 1; i <= NB_NODE; i++) {
 		min = NB_NODE;
@@ -556,14 +544,11 @@ int GET::fix_newNode_for_iset(int fix_node, int fix_iset) {
 	iSET_State[fix_iset] = PASSIVE;
 	push(fix_iset, PASSIVE_iSET_STACK);
 	assign_node(fix_node, P_FALSE, fix_iset);
-//iSET_Potential[fix_iset] -= Node_Potential[fix_node];
 	idx = ADDED_NODE_iSET[fix_node];
 	while ((iset_idx = CONFLICT_ISET_STACK[idx++]) != NONE) {
 		if (iSET_State[iset_idx] == ACTIVE) {
 			iSET_Size[iset_idx]--;
-			//iSET_ADD_Size[iset_idx]--;
 			push(iset_idx, REDUCED_iSET_STACK);
-			//iSET_Potential[iset_idx] -= Node_Potential[fix_node];
 			if (iSET_Size[iset_idx] == 1)
 				push(iset_idx, NEW_UNIT_STACK);
 			else if (iSET_Size[iset_idx] == 0)
@@ -639,7 +624,6 @@ int GET::fix_node_iset(int fix_iset) {
 	printf("error in fix_node_iset\n");
 	printf("iSET COUNT=%d\n", iSET_COUNT);
 	print_all_iset();
-	//exit(0);
 	exit(EXIT_FAILURE);
 }
 
@@ -688,24 +672,71 @@ int GET::unit_iset_process_used_first() {
 	} while (j < ptr(NEW_UNIT_STACK));
 	return NONE;
 }
+
+void GET::push_reason_iset(int iset_idx) {
+	if (iset_idx < 0 || iset_idx >= tab_node_size) {
+		fprintf(stderr,
+				"Invalid iSET index %d while identifying conflict sets (limit: %d).\n",
+				iset_idx, tab_node_size);
+		exit(EXIT_FAILURE);
+	}
+	if (iSET_Used[iset_idx] == FALSE) {
+		if (ptr(REASON_STACK) >= tab_node_size) {
+			fprintf(stderr,
+					"REASON_STACK overflow while identifying conflict sets "
+					"(size: %d, limit: %d, iSET_COUNT: %d).\n",
+					ptr(REASON_STACK), tab_node_size, iSET_COUNT);
+			exit(EXIT_FAILURE);
+		}
+		push(iset_idx, REASON_STACK);
+		iSET_Used[iset_idx] = TRUE;
+	}
+}
+
 void GET::identify_conflict_sets(int iset_idx) {
-	int i, reason_start = ptr(REASON_STACK), iset, *nodes, node, reason_iset;
-	push(iset_idx, REASON_STACK);
+	int i, iset, *nodes, node, reason_iset;
+	int local_reason_stack[tab_node_size], local_reason_count = 0;
+
+	if (iset_idx < 0 || iset_idx >= tab_node_size) {
+		fprintf(stderr,
+				"Invalid root iSET index %d while identifying conflict sets (limit: %d).\n",
+				iset_idx, tab_node_size);
+		exit(EXIT_FAILURE);
+	}
+	local_reason_stack[local_reason_count++] = iset_idx;
 	iSET_Involved[iset_idx] = TRUE;
-	for (i = reason_start; i < ptr(REASON_STACK); i++) {
-		iset = REASON_STACK[i];
+
+	for (i = 0; i < local_reason_count; i++) {
+		iset = local_reason_stack[i];
 		nodes = iSET[iset];
 		for (node = *nodes; node != NONE; node = *(++nodes))
-			if (node_state[node] == P_FALSE && node_reason[node] != NO_REASON
-					&& iSET_Involved[node_reason[node]] == FALSE) {
+			if (node_state[node] == P_FALSE && node_reason[node] != NO_REASON) {
 				reason_iset = node_reason[node];
-				push(reason_iset, REASON_STACK);
-				iSET_Involved[reason_iset] = TRUE;
+				if (reason_iset < 0 || reason_iset >= tab_node_size) {
+					fprintf(stderr,
+							"Invalid reason iSET index %d while identifying conflict sets "
+							"(limit: %d).\n",
+							reason_iset, tab_node_size);
+					exit(EXIT_FAILURE);
+				}
+				if (iSET_Involved[reason_iset] == FALSE) {
+					if (local_reason_count >= tab_node_size) {
+						fprintf(stderr,
+								"Local reason stack overflow while identifying conflict sets "
+								"(limit: %d, iSET_COUNT: %d).\n",
+								tab_node_size, iSET_COUNT);
+						exit(EXIT_FAILURE);
+					}
+					local_reason_stack[local_reason_count++] = reason_iset;
+					iSET_Involved[reason_iset] = TRUE;
+				}
 			}
 	}
-	for (i = reason_start; i < ptr(REASON_STACK); i++) {
-		iSET_Involved[REASON_STACK[i]] = FALSE;
-		iSET_Used[REASON_STACK[i]] = TRUE;
+	for (i = 0; i < local_reason_count; i++) {
+		push_reason_iset(local_reason_stack[i]);
+	}
+	for (i = 0; i < local_reason_count; i++) {
+		iSET_Involved[local_reason_stack[i]] = FALSE;
 	}
 }
 void GET::enlarge_conflict_sets() {
@@ -857,7 +888,6 @@ int GET::inc_maxsatz_lookahead_by_fl2() {
 				}
 			}
 			if (node == NONE) {
-				//reset_context_for_maxsatz();
 				return TRUE;
 			} else {
 				for (j = rs; j < ptr(REASON_STACK); j++) {
@@ -868,7 +898,6 @@ int GET::inc_maxsatz_lookahead_by_fl2() {
 			}
 		}
 	}
-//reset_context_for_maxsatz();
 	return FALSE;
 }
 
@@ -1263,10 +1292,7 @@ void GET::store_maximum_clique(int node, int print_info) {
 	MAX_COUNT = 1;
 	APPEND_STACK_USED = 0;
 
-//ptr(Clique_Stack)--;
-
 	if (LIST_ALL == TRUE) {
-		//Vertex_UB[CURSOR]=1;
 		ptr(Clique_Stack)--;
 	} else {
 		ptr(Cursor_Stack) = 1;
@@ -1275,10 +1301,6 @@ void GET::store_maximum_clique(int node, int print_info) {
 		Vertex_UB[CURSOR]=MAX_CLQ_SIZE;
 	}
 
-	// if (print_info == TRUE)
-	// 	printf("c %4d |%5d |%8d %10d %10d %10d|%10d \n", MAX_CLQ_SIZE,
-	// 			Cursor_Stack[0], cut_ver, cut_inc, cut_iset, cut_satz,
-	// 			BRANCHING_COUNT);
 	total_cut_ver += cut_ver;
 	cut_ver = 0;
 	total_cut_inc += cut_inc;
@@ -1411,12 +1433,6 @@ void GET::search_maxclique(int cutoff, int print_info) {
 	int node;
 	init_for_search();
 	BRANCHING_COUNT = 0;
-	if (print_info == TRUE) {
-		// printf(
-		// 		"c  -----------------------------------------------------------------\n");
-		// printf(
-		// 		"c  Size| Index|NB_Vertex  NB_IncUB    NB_Iset  NB_MaxSat|  NB_Branch\n");
-	}
 	while (CURSOR> 0) {
 		node=Candidate_Stack[--CURSOR];
 		if(CUR_CLQ_SIZE>0 && node>0)
@@ -1442,13 +1458,7 @@ void GET::search_maxclique(int cutoff, int print_info) {
 			} else {
 				Rollback_Point=ptr(Candidate_Stack);
 				if(cut_by_inc_ub(print_info)==TRUE
-				//|| cut_by_iset_first()==TRUE
-				//||cut_by_iset_first_renumber()==TRUE
-				//||cut_by_iset_last()==TRUE
 				||cut_by_iset_last_renumber()==TRUE
-				//||cut_by_iset_last_renumber2()==TRUE
-				//||compare_iset()==TRUE
-				//|| cut_by_inc_maxsat()==TRUE
 				|| cut_by_inc_maxsat_eliminate_first()==TRUE
 				) {
 					ptr(Candidate_Stack)=Rollback_Point;
@@ -1463,15 +1473,10 @@ void GET::search_maxclique(int cutoff, int print_info) {
 		}
 	}
 	if (print_info == TRUE) {
-		// printf("p %4d |%5d |%8d %10d %10d %10d|%10d \n", MAX_CLQ_SIZE,
-		// 		Last_Idx - CURSOR,cut_ver,cut_inc, cut_iset, cut_satz,BRANCHING_COUNT);
 		total_cut_ver += cut_ver;
 		total_cut_inc += cut_inc;
 		total_cut_iset += cut_iset;
 		total_cut_satz += cut_satz;
-		// printf(
-		// 		"c  ----------------------------------------------------------------\n");
-		// printf("c %4d |%5d |%8d %10d %10d %10d|%10d \n", MAX_CLQ_SIZE, CURSOR+1,total_cut_ver,total_cut_inc, total_cut_iset, total_cut_satz,BRANCHING_COUNT);
 	}
 }
 
@@ -1515,7 +1520,6 @@ int GET::sort_by_maxiset(int mandatory) {
 		}
 	}
 	complement_graph();
-	// printf("c Iset size is %d\n", nb_isets);
 	if (mandatory == FALSE && ans > 3
 			&& ((double) nb_isets / (double) ptr(INIT_Stack)) > 1.1) {
 		return FALSE;
@@ -1549,16 +1553,10 @@ void GET::init_for_maxclique(int ordering, int list_all) {
 	if (ordering > 0)
 		mandatory = TRUE;
 
-	if (ordering == 1) {
-		// printf("c Using the degeneracy ordering...\n");
-	} else if (ordering == 2);
-		// printf("c Using the MaxIndSet ordering...\n");
-	else if (ordering == -1) {
+	if (ordering == -1) {
 		if (DENSITY <= 60) {
-			// printf("c Using the degeneracy ordering...\n");
 			ordering = 1;
 		} else {
-			// printf("c Investigating the MaxIndSet ordering...\n");
 			ordering = 2;
 		}
 	}
@@ -1567,8 +1565,6 @@ void GET::init_for_maxclique(int ordering, int list_all) {
 		sort_by_active_degree();
 		Dynamic_Radio = 0.6;
 	} else if (sort_by_maxiset(mandatory) == FALSE) {
-		// printf(
-		// 		"c the MaxIndSet ordering disable, using the degeneracy ordering...\n");
 		sort_by_active_degree();
 		Dynamic_Radio = 0.6;
 	} else {
@@ -1584,7 +1580,6 @@ void GET::init_for_maxclique(int ordering, int list_all) {
 	} else {
 		MAX_CLQ_SIZE = 0;
 	}
-	// printf("c the current maximal clique is %d\n", MAX_CLQ_SIZE);
 
 	Mean_Dynamic_Radio = 0;
 	Dynamic_Count = 0;
@@ -1682,7 +1677,6 @@ std::vector<int> GET::get_mxclq(EdgeListGraph& graph) {
 	init_for_maxclique(ordering, _all);
 	re_code();
 	search_maxclique(0, TRUE);
-	//printallMaxClique();
 
 	std::vector<int> ans_clq;
 	for(int i = 0; i < MAX_CLQ_SIZE; i++){

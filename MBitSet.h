@@ -103,7 +103,6 @@ public:
 	}
 
 	void set(int x) {
-		//assert(x < cap);
 		buf[x >> 6] ^= 1ULL << (x & 63);
 	}
 	
@@ -126,7 +125,6 @@ public:
 	int size() {
 		int sum = 0;
 		for (int i = 0; i <= n; i++){
-			//sum += countint64(buf[i]);
 			sum += _mm_popcnt_u64(buf[i]);
 		}
 		return sum;
@@ -136,7 +134,6 @@ public:
 	int intersect(const MBitSet64 &mbs) {
 		int sum = 0;
 		for (int i = 0; i <= n; i++) {
-			//sum += countint64(buf[i] & mbs.buf[i]);
 			sum += _mm_popcnt_u64(buf[i] & mbs.buf[i]);
 		}
 		return sum;
@@ -207,7 +204,6 @@ public:
 	}
 	
 	void set(int x) {
-		//assert(x < cap);
 		buf[x >> 5] ^= (unsigned)1 << (x & 31);
 	}
 	bool test(int x) {
@@ -228,7 +224,6 @@ public:
 	int size() {
 		int sum = 0;
 		for (int i = 0; i <= n; i++) {
-			//sum += countint32(buf[i]);
 			sum += _mm_popcnt_u32(buf[i]);
 		}
 		return sum;
@@ -238,7 +233,6 @@ public:
 	int intersect(const MBitSet32 &mbs) {
 		int sum = 0;
 		for (int i = 0; i <= n; i++) {
-			//sum += countint32(buf[i] & mbs.buf[i]);
 			sum += _mm_popcnt_u32(buf[i] & mbs.buf[i]);
 		}
 		return sum;

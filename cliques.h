@@ -20,7 +20,6 @@ extern clock_t end_time;
 // 传入 method 参数 (1:度数正序 2:度数逆序 3:degen正序 4:degen逆序 5:随机)
 // 默认值为 2，保持原有代码逻辑一致
 int LB_with_fast_color(int method = 2);
-// int LB_with_fast_color();
 // 找到每个点的最大独立集，用于ban边
 void Max_clqs_of_nodes(std::vector<int>&);
 // 找到包含u,v两点邻居的最大团，相当于找到包含边（u, v）的团。

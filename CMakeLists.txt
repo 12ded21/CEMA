@@ -51,12 +51,7 @@ target_compile_options(main PRIVATE
     -fno-strict-aliasing
     -fexceptions
     -w
-    #-Wall
-    # -g
     -DMOMC
-    # -fsanitize=address,undefined 
-    # -fno-omit-frame-pointer
-    #-mcmodel=medium
     )  # 禁用警告（与-w等效）
 
 # 添加预处理器定义
@@ -71,5 +66,4 @@ target_link_libraries(main PRIVATE
     cplex
     pthread
     m
-    # -fsanitize=address,undefined   # <--- 【新增这一行】告诉链接器链接 ASan/UBSan 库
 )

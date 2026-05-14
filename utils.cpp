@@ -1,11 +1,9 @@
 #include "utils.h"
 
-//The variable
 extern int K;
 extern int *degree;
 extern int *dedges;
 
-//type converse
 std::string integeter_to_str(ll number){
     std::vector<int> sequence;
 	if(number == 0) 
@@ -27,7 +25,6 @@ std::string integeter_to_str(ll number){
 	return res;
 }
 
-//打开文件
 FILE* open_file(const char* file_name, const char* mode) {
 	FILE* f = fopen(file_name, mode);
 	if (f == nullptr) {
@@ -37,7 +34,6 @@ FILE* open_file(const char* file_name, const char* mode) {
 	return f;
 }
 
-//
 void fread_wall(void* __ptr, size_t __size, size_t __n, FILE* __stream) {
 	int sz = fread(__ptr, __size, __n, __stream);
 	if (sz != __n) {
@@ -45,7 +41,6 @@ void fread_wall(void* __ptr, size_t __size, size_t __n, FILE* __stream) {
 	}
 }
 
-// 计算 f 函数
 int func(int l, int q){
     if(l > q)
         return 0;
@@ -59,18 +54,15 @@ int func(int l, int q){
     }
 }
 
-// 初始化UB控制每次的个数
 int f1(int budget, int clq_size){
 	return std::min((int)ceil(log2(budget + 1)), clq_size * (clq_size - 1) / 2);
 }
 
 int f2(int budget, int clq_size, int del, bool flag){
-	// 如果 del < 0, 说明这是第一次调用
 	if(del < 0){
 		del = std::min((int)ceil(log2(budget + 1)), clq_size * (clq_size - 1) / 2);
 	}
 	else{
-		// flag == 1, 说明最大团减小了 
 		if(flag){
 			del = std::min(clq_size * ( clq_size - 1 ) / 2, del + 1);
 		}
@@ -82,15 +74,11 @@ int f2(int budget, int clq_size, int del, bool flag){
 }
 
 int f3(int budget, int clq_size, int del, bool flag){
-	// 如果 del < 0, 说明这是第一次调用
 	if(del < 0){
-		// del = std::min((int)ceil(log2(budget + 1)), clq_size);
 		del = 1;
 	}
 	else{
-		// flag == 1, 说明最大团减小了 
 		if(flag){
-			// del = std::max( 1, (int)ceil(del / 2.0));
 			del = 1;
 		}
 		else{
